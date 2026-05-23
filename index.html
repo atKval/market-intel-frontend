@@ -184,7 +184,9 @@ tr:hover td{background:var(--sur2)}
 </div>
 
 <script>
-const API=window.location.hostname==='localhost'?'http://localhost:5000/api':'/api';
+const API = window.location.hostname === 'localhost'
+  ? 'http://localhost:5000/api'
+  : 'https://market-intel-backend-production.up.railway.app/api';
 let all=[],filt=[],vf=null,inds={sma:true,bb:true,sr:true,fc:true,vol:true,rsi:true};
 let pc=null,rc=null,cs=null,dc=20;
 
