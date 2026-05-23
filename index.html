@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Market Intelligence</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.1/dist/chart.umd.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--bg:#0e1117;--sur:#161b26;--sur2:#1e2535;--brd:#2a3348;--txt:#e8eaf2;--txt2:#8892aa;--txt3:#4a5468;--grn:#26A69A;--gd:#0a2e25;--gt:#4dd9a8;--red:#EF5350;--rd:#2e0a10;--rt:#ff8090;--amb:#FF9800;--ad:#2a1800;--at:#ffc94d;--blu:#2962FF;--bld:#0a1a40;}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--bg);color:var(--txt);font-size:13px;min-height:100vh}
+.topbar{background:var(--sur);border-bottom:1px solid var(--brd);padding:0 16px;height:48px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.logo{font-size:14px;font-weight:500;color:var(--grn);margin-right:8px}
+.fsel{font-size:12px;padding:5px 22px 5px 8px;border-radius:5px;border:1px solid var(--brd);background:var(--sur2);color:var(--txt);cursor:pointer;-webkit-appearance:none;background-image:url("data:image/svg+xml,%3Csvg width='8' height='5' viewBox='0 0 8 5' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath d='M1 1l3 3 3-3' stroke='%238892aa' stroke-width='1.2' fill='none' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 7px center}
+.fsel:hover{border-color:var(--grn)}
+.tr{margin-left:auto;display:flex;align-items:center;gap:8px}
+.ldot{width:6px;height:6px;border-radius:50%;background:var(--grn);animation:pulse 2s ease-in-out infinite;display:inline-block}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.ltxt{font-size:11px;color:var(--grn)}
+.rbtn{font-size:12px;padding:5px 10px;border-radius:5px;border:1px solid var(--brd);background:none;color:var(--txt);cursor:pointer}
+.rbtn:hover{background:var(--blu);border-color:var(--blu);color:#fff}
+.tsl{font-size:11px;color:var(--txt3)}
+.scr{display:none}.scr.on{display:block}
+.sumrow{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;padding:10px 16px;border-bottom:1px solid var(--brd);background:var(--sur)}
+.scard{padding:8px 12px;border-radius:6px;cursor:pointer;border:2px solid transparent;user-select:none}
+.scard:hover{opacity:.85}.scard.sel{border-color:currentColor}
+.sc-r{background:var(--gd);color:var(--gt)}.sc-s{background:var(--ad);color:var(--at)}.sc-a{background:var(--rd);color:var(--rt)}.sc-n{background:var(--sur2);color:var(--txt2)}
+.slbl{font-size:10px;text-transform:uppercase;letter-spacing:.05em;opacity:.7;margin-bottom:2px}
+.sval{font-size:22px;font-weight:500;font-family:monospace}
+.twrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:11px;table-layout:fixed;min-width:700px}
+th{padding:6px 8px;text-align:left;font-size:10px;font-weight:500;color:var(--txt3);border-bottom:1px solid var(--brd);background:var(--sur2);white-space:nowrap;user-select:none;cursor:pointer}
+th:hover{color:var(--txt)}
+td{padding:8px 8px;border-bottom:1px solid var(--brd);vertical-align:middle;cursor:pointer}
+tr:hover td{background:var(--sur2)}
+.sym{font-weight:500;font-family:monospace;font-size:12px}
+.tbg{font-size:9px;padding:1px 5px;border-radius:99px;border:1px solid var(--brd);color:var(--txt3);margin-left:3px}
+.up{color:var(--grn)}.dn{color:var(--red)}
+.sbr{display:flex;align-items:center;gap:5px}
+.sbt{flex:1;height:4px;background:var(--brd);border-radius:2px;overflow:hidden}
+.sbf{height:4px;border-radius:2px}
+.sbn{font-family:monospace;font-size:11px;min-width:28px;text-align:right;font-weight:500}
+.vp{font-size:10px;padding:2px 7px;border-radius:99px;font-weight:500}
+.vr{background:var(--gd);color:var(--gt)}.vs{background:var(--ad);color:var(--at)}.vn{background:var(--sur2);color:var(--txt2)}.va{background:var(--rd);color:var(--rt)}
+.ent{font-size:10px;font-weight:500}
+.eg{color:var(--grn)}.ew{color:var(--amb)}.ep2{color:var(--red)}
+.rrv{font-family:monospace;font-size:11px}
+.why{font-size:11px;color:var(--txt2);line-height:1.5;white-space:normal}
+.ep{font-size:10px;padding:1px 6px;border-radius:99px}
+.ep-ok{background:var(--gd);color:var(--gt)}.ep-warn{background:var(--ad);color:var(--at)}
+.lmore{text-align:center;padding:12px;font-size:12px;color:var(--txt3);cursor:pointer;border-top:1px solid var(--brd)}
+.lmore:hover{color:var(--txt);background:var(--sur2)}
+.dtopbar{background:var(--sur);border-bottom:1px solid var(--brd);padding:10px 16px;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.bbtn{font-size:12px;padding:5px 10px;border-radius:5px;border:1px solid var(--brd);background:none;color:var(--txt);cursor:pointer}
+.bbtn:hover{background:var(--sur2)}
+.dsym{font-size:15px;font-weight:500;font-family:monospace}
+.dname{font-size:12px;color:var(--txt2)}
+.dprice{font-size:15px;font-weight:500;font-family:monospace}
+.dgrid{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(0,1fr);min-height:580px}
+.cpan{border-right:1px solid var(--brd);padding:12px 14px;display:flex;flex-direction:column;gap:8px}
+.irow{display:flex;gap:5px;flex-wrap:wrap}
+.ibtn{font-size:11px;padding:3px 8px;border-radius:4px;border:1px solid var(--brd);background:none;color:var(--txt3);cursor:pointer}
+.ibtn.on{background:rgba(38,166,154,.15);color:var(--grn);border-color:rgba(38,166,154,.4)}
+.cbox{background:var(--sur2);border-radius:5px;flex:1;min-height:200px;position:relative;overflow:hidden}
+.cbox canvas{position:absolute;top:0;left:0;width:100%!important;height:100%!important}
+.rsibox{background:var(--sur2);border-radius:5px;height:72px;position:relative;overflow:hidden}
+.rsibox canvas{position:absolute;top:0;left:0;width:100%!important;height:100%!important}
+.rpan{padding:12px 14px;display:flex;flex-direction:column;gap:10px;overflow-y:auto;max-height:640px}
+.rpan::-webkit-scrollbar{width:3px}
+.rpan::-webkit-scrollbar-thumb{background:var(--brd);border-radius:2px}
+.rsec{background:var(--sur2);border-radius:6px;padding:10px 12px}
+.stit{font-size:10px;font-weight:500;color:var(--txt3);text-transform:uppercase;letter-spacing:.06em;margin-bottom:8px}
+.crow{margin-bottom:9px}
+.chdr{display:flex;justify-content:space-between;font-size:11px;font-weight:500;color:var(--txt);margin-bottom:3px}
+.csc{font-family:monospace;color:var(--txt3)}
+.cbt{height:3px;background:var(--brd);border-radius:2px;overflow:hidden;margin-bottom:3px}
+.cbf{height:3px;border-radius:2px}
+.csg{font-size:11px;line-height:1.6}
+.sp{color:var(--grn)}.sn{color:var(--red)}.su{color:var(--txt3)}
+.clc{background:var(--sur2);border-radius:6px;padding:10px 12px}
+.ckr{font-size:11px;line-height:2;display:flex;align-items:center;gap:5px}
+.ck1{color:var(--grn)}.ck2{color:var(--amb)}.ck3{color:var(--red)}
+.esum{margin-top:6px;font-size:11px;font-weight:500;text-align:center;padding:4px 8px;border-radius:4px}
+.rrc{background:var(--sur2);border-radius:6px;padding:10px 12px}
+.rrg{display:grid;grid-template-columns:1fr 1fr;gap:6px;margin-bottom:8px}
+.rri{background:var(--sur);border-radius:5px;padding:6px 8px;border:1px solid var(--brd)}
+.rrl{font-size:10px;color:var(--txt3);margin-bottom:2px}
+.rrv2{font-size:13px;font-weight:500;font-family:monospace}
+.rrr{font-size:12px;font-weight:500;text-align:center}
+.posc{background:var(--sur2);border-radius:6px;padding:10px 12px}
+.posm{font-size:14px;font-weight:500;color:var(--txt);margin-bottom:3px}
+.poss{font-size:11px;color:var(--txt3)}
+.tabrow{display:flex;gap:4px;border-top:1px solid var(--brd);padding-top:10px}
+.tbtn{flex:1;font-size:11px;padding:6px;border-radius:5px;border:1px solid var(--brd);background:none;color:var(--txt2);cursor:pointer}
+.tbtn:hover,.tbtn.on{background:var(--bld);color:var(--txt);border-color:var(--blu)}
+.tpane{display:none}.tpane.on{display:block}
+.ni{padding:9px 0;border-bottom:1px solid var(--brd);cursor:pointer}
+.ni:hover{opacity:.8}
+.ntt{font-size:12px;font-weight:500;line-height:1.4;margin-bottom:3px;color:var(--txt)}
+.nm{font-size:10px;color:var(--txt3);display:flex;gap:6px;align-items:center}
+.fr{display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px solid var(--brd);font-size:11px}
+.fk{color:var(--txt3)}.fv{font-family:monospace;color:var(--txt)}
+.sr2{margin-bottom:11px}
+.sl{font-size:11px;color:var(--txt3);margin-bottom:4px;display:block}
+.sw{display:flex;align-items:center;gap:8px}
+.sw input[type=range]{flex:1;-webkit-appearance:none;height:3px;background:var(--brd);border-radius:2px;outline:none;cursor:pointer}
+.sw input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:13px;height:13px;background:var(--blu);border-radius:50%}
+.sv2{font-family:monospace;font-size:11px;min-width:36px;text-align:right;color:var(--txt)}
+.apb{width:100%;padding:8px;background:var(--blu);color:#fff;border:none;border-radius:5px;cursor:pointer;font-size:12px;margin-top:8px}
+.apb:hover{opacity:.85}
+.empty{text-align:center;padding:40px;color:var(--txt3);font-size:13px}
+.spin{display:inline-block;width:18px;height:18px;border:2px solid var(--brd);border-top-color:var(--grn);border-radius:50%;animation:spin .8s linear infinite;vertical-align:middle;margin-right:6px}
+@keyframes spin{to{transform:rotate(360deg)}}
+</style>
+</head>
+<body>
+<div class="topbar">
+  <span class="logo">&#9650; Market Intel</span>
+  <select class="fsel" id="fm" onchange="applyF()"><option value="">Market: All</option><option value="US">US</option><option value="Scandinavia">Scandinavia</option><option value="Europe">Europe</option></select>
+  <select class="fsel" id="fc2" onchange="applyF()"><option value="">Country: All</option><option value="US">United States</option><option value="DK">Denmark</option><option value="SE">Sweden</option><option value="NO">Norway</option><option value="DE">Germany</option><option value="CA">Canada</option></select>
+  <select class="fsel" id="ft" onchange="applyF()"><option value="">Tier: All stocks</option><option value="Penny">Penny (&lt;$5)</option><option value="Mid">Mid ($5-$100)</option><option value="Large">Large ($100+)</option></select>
+  <select class="fsel" id="fs" onchange="applyF()"><option value="">Sector: All</option><option value="Tech">Technology</option><option value="Pharma">Pharma / Health</option><option value="Energy">Energy</option><option value="Finance">Finance</option><option value="Bev">Beverages / Food</option><option value="Ind">Industrial</option></select>
+  <select class="fsel" id="fe" onchange="applyF()"><option value="">Entry: All</option><option value="GOOD">Good entry only</option><option value="FAIR">Fair or better</option></select>
+  <select class="fsel" id="fso" onchange="applyF()"><option value="score">Sort: Score</option><option value="chg_up">Sort: Gainers</option><option value="chg_dn">Sort: Losers</option><option value="rr">Sort: R/R ratio</option></select>
+  <div class="tr">
+    <span class="ldot"></span><span class="ltxt" id="lstatus">Loading...</span>
+    <button class="rbtn" onclick="refreshScan()">&#8635; Refresh</button>
+    <span class="tsl" id="tscan"></span>
+  </div>
+</div>
+
+<div class="scr on" id="s1">
+  <div class="sumrow">
+    <div class="scard sc-r" id="cr" onclick="fv2('recommend')"><div class="slbl">Recommend</div><div class="sval" id="nr">-</div></div>
+    <div class="scard sc-s" id="cs2" onclick="fv2('speculative')"><div class="slbl">Speculative</div><div class="sval" id="ns">-</div></div>
+    <div class="scard sc-a" id="ca" onclick="fv2('avoid')"><div class="slbl">Avoid</div><div class="sval" id="na2">-</div></div>
+    <div class="scard sc-n" id="cn" onclick="fv2('neutral')"><div class="slbl">Neutral</div><div class="sval" id="nn">-</div></div>
+  </div>
+  <div class="twrap">
+    <table>
+      <thead><tr>
+        <th style="width:88px">Symbol</th>
+        <th style="width:150px">Name</th>
+        <th style="width:78px">Price / Chg</th>
+        <th style="width:100px">Score</th>
+        <th style="width:78px">Entry</th>
+        <th style="width:66px">R/R</th>
+        <th style="width:58px">Sector</th>
+        <th>Why now - 48h catalyst</th>
+        <th style="width:24px"></th>
+      </tr></thead>
+      <tbody id="stb"><tr><td colspan="9" class="empty"><span class="spin"></span>Loading market data...</td></tr></tbody>
+    </table>
+  </div>
+  <div class="lmore" id="lm" style="display:none" onclick="loadMore()">Show more stocks</div>
+</div>
+
+<div class="scr" id="s2">
+  <div class="dtopbar">
+    <button class="bbtn" onclick="goBack()">&#8592; Back</button>
+    <span class="dsym" id="dsym">-</span>
+    <span class="dname" id="dname">-</span>
+    <span class="dprice" id="dprice">-</span>
+    <span id="dchg" style="font-size:12px;margin-left:2px"></span>
+    <span id="dvp" class="vp">-</span>
+    <span id="dent" style="font-size:11px;font-weight:500;margin-left:4px"></span>
+    <span id="drr" style="font-size:11px;color:var(--txt3);font-family:monospace;margin-left:4px"></span>
+  </div>
+  <div class="dgrid">
+    <div class="cpan">
+      <div class="irow">
+        <button class="ibtn on" id="i-sma" onclick="tog('sma',this)">SMA</button>
+        <button class="ibtn on" id="i-bb" onclick="tog('bb',this)">BB</button>
+        <button class="ibtn on" id="i-sr" onclick="tog('sr',this)">S/R</button>
+        <button class="ibtn on" id="i-fc" onclick="tog('fc',this)">Forecast</button>
+        <button class="ibtn on" id="i-vol" onclick="tog('vol',this)">Volume</button>
+        <button class="ibtn on" id="i-rsi" onclick="tog('rsi',this)">RSI</button>
+      </div>
+      <div class="cbox"><canvas id="pc"></canvas></div>
+      <div class="rsibox" id="rb"><canvas id="rc"></canvas></div>
+    </div>
+    <div class="rpan" id="rp"><div class="empty">Loading...</div></div>
+  </div>
+</div>
+
+<script>
+const API=window.location.hostname==='localhost'?'http://localhost:5000/api':'/api';
+let all=[],filt=[],vf=null,inds={sma:true,bb:true,sr:true,fc:true,vol:true,rsi:true};
+let pc=null,rc=null,cs=null,dc=20;
+
+const CFG={rsi_oversold:30,rsi_overbought:70,profit_margin:20,revenue_growth:20,pe_undervalued:15,pe_overvalued:40,max_debt_equity:50,recommend_threshold:8,account_size:10000,risk_percent:2.0};
+
+async function init(){
+  try{
+    document.getElementById('lstatus').textContent='Scanning...';
+    const r=await fetch(API+'/scan');
+    if(!r.ok)throw new Error('api');
+    const j=await r.json();
+    all=j.stocks||[];
+    document.getElementById('tscan').textContent=fmtTs(j.timestamp);
+    document.getElementById('lstatus').textContent='Live';
+    applyF();
+  }catch(e){
+    document.getElementById('lstatus').textContent='Offline - demo data';
+    loadDemo();
+  }
+}
+
+async function refreshScan(){
+  document.getElementById('lstatus').textContent='Refreshing...';
+  try{await fetch(API+'/scan/refresh',{method:'POST'});await init();}
+  catch(e){document.getElementById('lstatus').textContent='Error';}
+}
+
+function fmtTs(ts){
+  if(!ts)return'';
+  try{const d=new Date(ts);return d.toLocaleTimeString('da-DK',{hour:'2-digit',minute:'2-digit'});}catch(e){return ts;}
+}
+
+function fp(p){
+  if(p===null||p===undefined)return'-';
+  if(p<0.01&&p>0)return'$'+p.toFixed(5);
+  if(p<1)return'$'+p.toFixed(3);
+  if(p<100)return'$'+p.toFixed(2);
+  return'$'+Math.round(p).toLocaleString();
+}
+
+function applyF(){
+  const m=document.getElementById('fm').value;
+  const c=document.getElementById('fc2').value;
+  const t=document.getElementById('ft').value;
+  const s=document.getElementById('fs').value;
+  const e=document.getElementById('fe').value;
+  const so=document.getElementById('fso').value;
+  const SC=['DK','SE','NO'],EU=['DK','SE','NO','DE'];
+  filt=all.filter(x=>{
+    if(m==='US'&&x.country!=='US')return false;
+    if(m==='Scandinavia'&&!SC.includes(x.country))return false;
+    if(m==='Europe'&&!EU.includes(x.country))return false;
+    if(c&&x.country!==c)return false;
+    if(t&&x.tier!==t)return false;
+    if(s&&x.sector!==s)return false;
+    if(e==='GOOD'&&x.entry!=='GOOD')return false;
+    if(e==='FAIR'&&!['GOOD','FAIR'].includes(x.entry))return false;
+    if(vf){const v=(x.verdict_class||'').toLowerCase();
+      if(vf==='recommend'&&v!=='recommend')return false;
+      if(vf==='speculative'&&!v.includes('speculative'))return false;
+      if(vf==='avoid'&&!v.includes('avoid'))return false;
+      if(vf==='neutral'&&v!=='neutral')return false;
+    }
+    return true;
+  });
+  if(so==='score')filt.sort((a,b)=>b.total-a.total);
+  else if(so==='chg_up')filt.sort((a,b)=>b.chg-a.chg);
+  else if(so==='chg_dn')filt.sort((a,b)=>a.chg-b.chg);
+  else if(so==='rr')filt.sort((a,b)=>(b.rr_ratio||0)-(a.rr_ratio||0));
+  updCards();dc=20;renderT();
+}
+
+function fv2(v){
+  vf=vf===v?null:v;
+  ['cr','cs2','ca','cn'].forEach(id=>document.getElementById(id).classList.remove('sel'));
+  const map={recommend:'cr',speculative:'cs2',avoid:'ca',neutral:'cn'};
+  if(vf&&map[vf])document.getElementById(map[vf]).classList.add('sel');
+  applyF();
+}
+
+function updCards(){
+  const cnt={recommend:0,speculative:0,avoid:0,neutral:0};
+  all.forEach(s=>{
+    const v=(s.verdict_class||'neutral').toLowerCase();
+    if(v==='recommend')cnt.recommend++;
+    else if(v.includes('speculative'))cnt.speculative++;
+    else if(v.includes('avoid')&&!v.includes('spec'))cnt.avoid++;
+    else cnt.neutral++;
+  });
+  document.getElementById('nr').textContent=cnt.recommend;
+  document.getElementById('ns').textContent=cnt.speculative;
+  document.getElementById('na2').textContent=cnt.avoid;
+  document.getElementById('nn').textContent=cnt.neutral;
+}
+
+function loadMore(){dc+=20;renderT();}
+
+function vcls(vc){const v=(vc||'').toLowerCase();if(v==='recommend')return'vr';if(v.includes('speculative'))return'vs';if(v.includes('avoid'))return'va';return'vn';}
+function vlbl(vc){const v=(vc||'').toLowerCase();if(v==='recommend')return'Recommend';if(v.includes('speculative'))return'Speculative';if(v.includes('avoid'))return'Avoid';return'Neutral';}
+
+function renderT(){
+  const tb=document.getElementById('stb');
+  const vis=filt.slice(0,dc);
+  if(!vis.length){tb.innerHTML='<tr><td colspan="9" class="empty">No stocks match your filters</td></tr>';document.getElementById('lm').style.display='none';return;}
+  const col=t=>t>=8?'var(--grn)':t>=0?'var(--amb)':'var(--red)';
+  const pct=t=>Math.min(100,Math.max(0,(t+20)/70*100));
+  const rrcol=r=>r>=3?'var(--grn)':r>=2?'var(--amb)':'var(--red)';
+  tb.innerHTML=vis.map(s=>`<tr onclick="openD('${s.sym}')">
+    <td><span class="sym" style="color:${col(s.total)}">${s.sym}</span><span class="tbg">${s.tier||''}</span></td>
+    <td style="color:var(--txt2);font-size:11px;overflow:hidden;text-overflow:ellipsis">${s.name} <span style="color:var(--txt3)">${s.country}</span></td>
+    <td style="text-align:right"><div style="font-family:monospace">${fp(s.price)}</div><div class="${s.chg>=0?'up':'dn'}" style="font-size:10px">${s.chg>=0?'+':''}${(s.chg||0).toFixed(2)}%</div></td>
+    <td><div class="sbr"><div class="sbt"><div class="sbf" style="width:${pct(s.total)}%;background:${col(s.total)}"></div></div><span class="sbn" style="color:${col(s.total)}">${s.total>0?'+':''}${s.total}</span></div><span class="vp ${vcls(s.verdict_class)}">${vlbl(s.verdict_class)}</span></td>
+    <td><div class="ent ${s.entry==='GOOD'?'eg':s.entry==='FAIR'||s.entry==='WAIT'?'ew':'ep2'}">${s.entry||'-'}</div><div style="font-size:10px;color:var(--txt3)">RSI ${s.rsi||'-'}</div></td>
+    <td><span class="rrv" style="color:${rrcol(s.rr_ratio||0)}">${s.rr_ratio?'1:'+s.rr_ratio:'-'}</span></td>
+    <td style="font-size:11px;color:var(--txt3);white-space:nowrap;overflow:hidden">${s.sector||'-'}</td>
+    <td><div class="why">${(s.why_now||[]).slice(0,2).join(' · ')||'-'}</div><div style="margin-top:2px"><span class="ep ep-ok">No events</span></div></td>
+    <td style="font-size:14px;color:var(--txt3)">&#8250;</td>
+  </tr>`).join('');
+  const lm=document.getElementById('lm');
+  if(filt.length>dc){lm.style.display='block';lm.textContent='Show more ('+(filt.length-dc)+' remaining)';}
+  else lm.style.display='none';
+}
+
+function smaC(a,n){return a.map((_,i)=>i<n-1?null:a.slice(i-n+1,i+1).reduce((s,v)=>s+v,0)/n);}
+function bbC(a,n=20,k=2){const m=smaC(a,n);return{mid:m,upper:m.map((mv,i)=>{if(!mv)return null;const w=a.slice(Math.max(0,i-n+1),i+1),sd=Math.sqrt(w.reduce((s,v)=>s+(v-mv)**2,0)/w.length);return mv+k*sd;}),lower:m.map((mv,i)=>{if(!mv)return null;const w=a.slice(Math.max(0,i-n+1),i+1),sd=Math.sqrt(w.reduce((s,v)=>s+(v-mv)**2,0)/w.length);return mv-k*sd;})};}
+function rsiC(a,n=14){if(a.length<n+1)return Array(a.length).fill(null);const d=a.map((v,i)=>i===0?0:v-a[i-1]);let ag=d.slice(1,n+1).filter(v=>v>0).reduce((s,v)=>s+v,0)/n,al=d.slice(1,n+1).filter(v=>v<0).reduce((s,v)=>s+Math.abs(v),0)/n;const r=Array(n).fill(null);r.push(al===0?100:100-(100/(1+ag/al)));for(let i=n;i<d.length;i++){ag=(ag*(n-1)+(d[i]>0?d[i]:0))/n;al=(al*(n-1)+(d[i]<0?Math.abs(d[i]):0))/n;r.push(al===0?100:100-(100/(1+ag/al)));}return r;}
+function fcC(prices,target,days=30){const last=prices[prices.length-1],vol=Math.sqrt(prices.slice(-15).reduce((s,v,i,a)=>i===0?0:s+(v/a[i-1]-1)**2,0)/14);const pts=[];for(let i=1;i<=days;i++){const base=last+(target-last)*(i/days)*0.4;pts.push({base,u68:base+last*vol*Math.sqrt(i),l68:base-last*vol*Math.sqrt(i),u95:base+last*vol*Math.sqrt(i)*1.96,l95:base-last*vol*Math.sqrt(i)*1.96});}return pts;}
+
+function openD(sym){
+  cs=all.find(x=>x.sym===sym);if(!cs)return;
+  document.getElementById('s1').classList.remove('on');
+  document.getElementById('s2').classList.add('on');
+  window.scrollTo(0,0);
+  document.getElementById('dsym').textContent=sym;
+  document.getElementById('dname').textContent=cs.name;
+  document.getElementById('dprice').textContent=fp(cs.price);
+  document.getElementById('dprice').className='dprice '+(cs.chg>=0?'up':'dn');
+  document.getElementById('dchg').textContent=(cs.chg>=0?'+':'')+(cs.chg||0).toFixed(2)+'%';
+  document.getElementById('dchg').className=cs.chg>=0?'up':'dn';
+  const vp=document.getElementById('dvp');vp.textContent=vlbl(cs.verdict_class);vp.className='vp '+vcls(cs.verdict_class);
+  const de=document.getElementById('dent');de.textContent='Entry: '+(cs.entry||'-');de.style.color=cs.entry==='GOOD'?'var(--grn)':cs.entry==='FAIR'||cs.entry==='WAIT'?'var(--amb)':'var(--red)';
+  const rr=document.getElementById('drr');rr.textContent=cs.rr_ratio?'R/R 1:'+cs.rr_ratio:'';rr.style.color=(cs.rr_ratio||0)>=3?'var(--grn)':(cs.rr_ratio||0)>=2?'var(--amb)':'var(--red)';
+  renderChart(cs);renderRight(cs);
+}
+
+function goBack(){
+  document.getElementById('s2').classList.remove('on');
+  document.getElementById('s1').classList.add('on');
+  if(pc){pc.destroy();pc=null;}if(rc){rc.destroy();rc=null;}
+}
+
+function tog(k,btn){inds[k]=!inds[k];btn.classList.toggle('on',inds[k]);if(cs)renderChart(cs);}
+
+function renderChart(s){
+  if(pc){pc.destroy();pc=null;}if(rc){rc.destroy();rc=null;}
+  const prices=s.prices||[],vols=s.volumes||[];
+  if(!prices.length)return;
+  const labels=prices.map((_,i)=>'D'+(i+1));
+  const fcDays=30,tgt=s.target||prices[prices.length-1];
+  const fc=inds.fc?fcC(prices,tgt,fcDays):[];
+  const allL=[...labels,...Array.from({length:fcDays},(_,i)=>'F'+(i+1))];
+  const ds=[{label:'Price',data:[...prices,...Array(fcDays).fill(null)],borderColor:'#2962FF',backgroundColor:'transparent',borderWidth:2,pointRadius:0,tension:.1,order:1}];
+  if(inds.sma){const s5=[...smaC(prices,5),...Array(fcDays).fill(null)],s20=[...smaC(prices,20),...Array(fcDays).fill(null)];ds.push({label:'SMA5',data:s5,borderColor:'#FF9800',borderWidth:1,borderDash:[4,3],pointRadius:0,tension:.1,order:3},{label:'SMA20',data:s20,borderColor:'#9C27B0',borderWidth:1,borderDash:[4,3],pointRadius:0,tension:.1,order:4});}
+  if(inds.bb){const{upper,lower}=bbC(prices);ds.push({label:'BB+',data:[...upper,...Array(fcDays).fill(null)],borderColor:'#555',borderWidth:1,borderDash:[2,3],pointRadius:0,fill:false,tension:.1},{label:'BB-',data:[...lower,...Array(fcDays).fill(null)],borderColor:'#555',borderWidth:1,borderDash:[2,3],pointRadius:0,fill:'-1',backgroundColor:'rgba(100,100,100,0.07)',tension:.1});}
+  if(inds.fc&&fc.length){const pad=Array(prices.length).fill(null);ds.push({label:'FC95+',data:[...pad,...fc.map(f=>f.u95)],borderColor:'transparent',pointRadius:0,fill:false,backgroundColor:'rgba(38,166,154,0.08)'},{label:'FC95-',data:[...pad,...fc.map(f=>f.l95)],borderColor:'transparent',pointRadius:0,fill:'-1',backgroundColor:'rgba(38,166,154,0.08)'},{label:'FC68+',data:[...pad,...fc.map(f=>f.u68)],borderColor:'transparent',pointRadius:0,fill:false,backgroundColor:'rgba(38,166,154,0.15)'},{label:'FC68-',data:[...pad,...fc.map(f=>f.l68)],borderColor:'transparent',pointRadius:0,fill:'-1',backgroundColor:'rgba(38,166,154,0.15)'},{label:'Trend',data:[...pad,...fc.map(f=>f.base)],borderColor:'#26A69A',borderWidth:1.5,borderDash:[5,3],pointRadius:0,tension:.1},{label:'Target',data:[...Array(prices.length-1).fill(null),prices[prices.length-1],...Array(fcDays-1).fill(null),tgt],borderColor:'#FFD700',borderWidth:1,borderDash:[3,4],pointRadius:[...Array(prices.length-1).fill(0),4,...Array(fcDays-1).fill(0),6],pointBackgroundColor:'#FFD700',tension:.1});}
+  const anns={};
+  if(inds.sr){const hi=Math.max(...prices),lo=Math.min(...prices),dec=prices[prices.length-1]<10?3:0;anns.res={type:'line',yMin:hi,yMax:hi,borderColor:'#EF5350',borderWidth:1,borderDash:[5,3],label:{display:true,content:'R '+fp(hi),color:'#EF5350',font:{size:9},position:'end',backgroundColor:'rgba(14,17,23,0.8)'}};anns.sup={type:'line',yMin:lo,yMax:lo,borderColor:'#26A69A',borderWidth:1,borderDash:[5,3],label:{display:true,content:'S '+fp(lo),color:'#26A69A',font:{size:9},position:'end',backgroundColor:'rgba(14,17,23,0.8)'}};anns.div={type:'line',xMin:prices.length-0.5,xMax:prices.length-0.5,borderColor:'#555',borderWidth:1,borderDash:[2,3]};}
+  const opts={responsive:true,maintainAspectRatio:false,animation:false,plugins:{legend:{display:false},annotation:{annotations:anns},tooltip:{backgroundColor:'var(--sur)',titleColor:'var(--txt)',bodyColor:'var(--txt)',borderColor:'var(--brd)',borderWidth:1,filter:i=>i.datasetIndex<2}},scales:{x:{grid:{color:'rgba(42,51,72,0.5)'},ticks:{color:'var(--txt3)',font:{size:9},maxRotation:0,maxTicksLimit:8},border:{color:'var(--brd)'}},y:{grid:{color:'rgba(42,51,72,0.5)'},ticks:{color:'var(--txt3)',font:{size:9}},border:{color:'var(--brd)'}}}};
+  pc=new Chart(document.getElementById('pc').getContext('2d'),{type:'line',data:{labels:allL,datasets:ds},options:opts});
+  const rb=document.getElementById('rb');
+  if(inds.rsi){rb.style.display='block';const rv=rsiC(prices);rc=new Chart(document.getElementById('rc').getContext('2d'),{type:'line',data:{labels,datasets:[{data:rv,borderColor:'#FF9800',borderWidth:1.5,pointRadius:rv.map(v=>v===null?0:2),pointBackgroundColor:rv.map(v=>v===null?'transparent':v<30?'#26A69A':v>70?'#EF5350':'#FF9800'),tension:.1,fill:false}]},options:{responsive:true,maintainAspectRatio:false,animation:false,plugins:{legend:{display:false}},scales:{x:{display:false},y:{min:0,max:100,grid:{color:'rgba(42,51,72,0.5)'},ticks:{color:'var(--txt3)',font:{size:9},stepSize:30},border:{color:'var(--brd)'}}}}}});}
+  else rb.style.display='none';
+}
+
+function renderRight(s){
+  const catN={technical:'Technical',fundamental:'Fundamental',valuation:'Valuation',sentiment:'Sentiment',risk:'Risk',news:'News & Catalysts'};
+  const sc=s.scores||{},sg=s.signals||{};
+  let sHTML='';
+  Object.entries(sc).forEach(([k,v])=>{const pct=Math.min(100,Math.max(0,(v+10)/20*100));const col=v>1.5?'var(--grn)':v<-1.5?'var(--red)':'var(--amb)';sHTML+=`<div class="crow"><div class="chdr"><span>${catN[k]||k}</span><span class="csc">${v>0?'+':''}${v}/10</span></div><div class="cbt"><div class="cbf" style="width:${pct}%;background:${col}"></div></div>${(sg[k]||[]).map(x=>`<div class="csg ${x.type==='p'?'sp':x.type==='n'?'sn':'su'}">${x.type==='p'?'&#10003;':x.type==='n'?'&#10007;':'&#9679;'} ${x.text||''}</div>`).join('')}</div>`;});
+  const ec=s.entry_checks||{};
+  const checks=[{k:'rsi_ok',l:'RSI below 60 - room to run'},{k:'near_support',l:'Price near support level'},{k:'volume_ok',l:'Volume confirming the move'},{k:'trend_ok',l:'Price above SMA - uptrend'},{k:'not_overbought',l:'Not overbought on RSI'}];
+  const passed=checks.filter(c=>ec[c.k]).length;
+  const ebg=passed>=4?'var(--gd)':passed>=3?'var(--ad)':'var(--rd)';
+  const etxt=passed>=4?'var(--gt)':passed>=3?'var(--at)':'var(--rt)';
+  const rrc=(s.rr_ratio||0)>=3?'var(--grn)':(s.rr_ratio||0)>=2?'var(--amb)':'var(--red)';
+  const pos=s.position||{};
+  const ins=s.insider;
+  const news=(s.news||[]).map(n=>`<div class="ni"><div class="ntt">${n.title||''}</div><div class="nm"><span>${n.source||''}</span><span class="${n.sentiment==='pos'?'sp':n.sentiment==='neg'?'sn':'su'}">${n.sentiment==='pos'?'&#9650; Positive':n.sentiment==='neg'?'&#9660; Negative':'&#9679; Neutral'}</span><span style="margin-left:auto">${n.time||''}</span></div></div>`).join('');
+  const fund=`<div style="padding:6px 0"><div class="fr"><span class="fk">P/E ratio</span><span class="fv">${s.pe||'N/A'}</span></div><div class="fr"><span class="fk">Forward P/E</span><span class="fv">${s.fpe||'N/A'}</span></div><div class="fr"><span class="fk">Profit margin</span><span class="fv ${(s.pm||0)>0?'up':'dn'}">${s.pm||'N/A'}%</span></div><div class="fr"><span class="fk">Revenue growth</span><span class="fv ${(s.rg||0)>0?'up':'dn'}">${s.rg||'N/A'}%</span></div><div class="fr"><span class="fk">ROE</span><span class="fv ${(s.roe||0)>0?'up':'dn'}">${s.roe||'N/A'}%</span></div><div class="fr"><span class="fk">Debt/Equity</span><span class="fv">${s.de||'N/A'}</span></div><div class="fr"><span class="fk">Current ratio</span><span class="fv">${s.cr||'N/A'}</span></div><div class="fr"><span class="fk">Beta</span><span class="fv">${s.beta||'N/A'}</span></div><div class="fr"><span class="fk">Analyst target</span><span class="fv">${fp(s.target)}</span></div></div>`;
+  const insider=ins?`<div style="padding:6px 0"><div class="fr"><span class="fk">Action</span><span class="fv ${ins.action==='buy'?'up':'dn'}">${(ins.action||'').toUpperCase()}</span></div><div class="fr"><span class="fk">Person</span><span class="fv">${ins.name||'-'}</span></div><div class="fr"><span class="fk">Amount</span><span class="fv">$${(ins.amount||0).toLocaleString()}</span></div><div class="fr"><span class="fk">Date</span><span class="fv">${ins.date||'-'}</span></div></div>`:'<div class="empty" style="padding:16px">No recent insider transactions</div>';
+  const sets=[['rsi_oversold','RSI oversold threshold',20,40,1,''],['rsi_overbought','RSI overbought threshold',60,80,1,''],['profit_margin','Profit margin for +2pts (%)',5,35,1,'%'],['revenue_growth','Revenue growth for +2pts (%)',5,40,1,'%'],['pe_undervalued','P/E undervalued below',8,25,1,''],['pe_overvalued','P/E overvalued above',25,80,1,''],['max_debt_equity','Max debt/equity (low risk)',20,200,5,''],['recommend_threshold','Recommend score threshold',4,20,1,''],['account_size','Account size ($)',1000,100000,500,'$'],['risk_percent','Risk per trade (%)',0.5,5,0.5,'%']];
+  const shtml=sets.map(([k,l,mn,mx,st,u])=>`<div class="sr2"><span class="sl">${l}</span><div class="sw"><input type="range" min="${mn}" max="${mx}" step="${st}" value="${CFG[k]||mn}" id="sr-${k}" oninput="CFG['${k}']=parseFloat(this.value);document.getElementById('sv-${k}').textContent='${u}'+this.value"><span class="sv2" id="sv-${k}">${u}${CFG[k]||mn}</span></div></div>`).join('')+'<button class="apb" onclick="saveSettings()">Save and re-analyze</button>';
+  document.getElementById('rp').innerHTML=`
+    <div class="rsec"><div class="stit">Score breakdown</div>${sHTML}</div>
+    <div class="clc"><div class="stit">Entry checklist</div>${checks.map(c=>`<div class="ckr ${ec[c.k]?'ck1':'ck3'}"><span>${ec[c.k]?'&#10003;':'&#10007;'}</span><span>${c.l}</span></div>`).join('')}<div class="esum" style="background:${ebg};color:${etxt}">${passed}/5 passed - ${passed>=4?'good entry window':passed>=3?'proceed with caution':'wait for a better setup'}</div></div>
+    <div class="rrc"><div class="stit">Risk / reward</div><div class="rrg"><div class="rri"><div class="rrl">Take profit (analyst target)</div><div class="rrv2 up">${fp(s.target)}</div></div><div class="rri"><div class="rrl">Stop loss (support level)</div><div class="rrv2 dn">${fp(s.support)}</div></div></div><div class="rrr" style="color:${rrc}">${s.rr_ratio?'Ratio 1:'+s.rr_ratio+' - '+(s.rr_ratio>=3?'Excellent':s.rr_ratio>=2?'Good':'Below target'):'R/R unavailable'}</div></div>
+    <div class="posc"><div class="stit">Position size (${CFG.risk_percent}% risk)</div><div class="posm">${pos.shares?pos.shares.toLocaleString()+' shares @ '+fp(s.price):'Avoid - no position recommended'}</div><div class="poss">Cost ${fp(pos.cost)} - Max loss $${pos.risk_amount||0} - Account $${CFG.account_size.toLocaleString()}</div></div>
+    <div class="tabrow">
+      <button class="tbtn on" onclick="stab('news',this)">News</button>
+      <button class="tbtn" onclick="stab('fund',this)">Fundamentals</button>
+      <button class="tbtn" onclick="stab('insider',this)">Insider</button>
+      <button class="tbtn" onclick="stab('settings',this)">Settings</button>
+    </div>
+    <div class="tpane on" id="tp-news">${news||'<div class="empty" style="padding:12px">No news available</div>'}</div>
+    <div class="tpane" id="tp-fund">${fund}</div>
+    <div class="tpane" id="tp-insider">${insider}</div>
+    <div class="tpane" id="tp-settings"><div style="padding:8px 0">${shtml}</div></div>
+  `;
+}
+
+function stab(id,btn){document.querySelectorAll('.tbtn').forEach(b=>b.classList.remove('on'));document.querySelectorAll('.tpane').forEach(p=>p.classList.remove('on'));btn.classList.add('on');document.getElementById('tp-'+id).classList.add('on');}
+
+async function saveSettings(){
+  try{await fetch(API+'/settings',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(CFG)});}catch(e){}
+  if(cs)renderRight(cs);
+}
+
+function loadDemo(){
+  all=[
+    {sym:'SCWO',name:'374Water Inc.',country:'US',sector:'Tech',tier:'Penny',price:2.37,chg:2.60,rsi:28,sma20:2.45,sma50:2.80,support:1.90,resistance:3.90,vol_ratio:4.1,target:8.50,rr_ratio:9.2,pe:0,fpe:0,peg:0,pm:-18.5,rg:45.5,roe:-42.5,de:8.5,cr:2.85,beta:1.85,rec_key:'buy',num_analysts:5,total:12.5,verdict:'Recommend',verdict_class:'recommend',entry:'GOOD',entry_checks:{rsi_ok:true,near_support:true,volume_ok:true,trend_ok:false,not_overbought:true},checks_passed:4,scores:{technical:3,fundamental:-1,valuation:1,sentiment:4.5,risk:2,news:3},signals:{technical:[{type:'p',text:'RSI oversold (28) - bounce setup'},{type:'p',text:'Volume 4x average'}],fundamental:[{type:'n',text:'Negative margin pre-profit'},{type:'p',text:'Revenue growth 45.5%'}],valuation:[{type:'u',text:'Pre-profit stage'},{type:'p',text:'Target +259% upside'}],sentiment:[{type:'p',text:'BUY - 5 analysts'},{type:'p',text:'INSIDER BUY: CEO $250k'}],risk:[{type:'p',text:'Low D/E (8.5)'},{type:'n',text:'High beta 1.85'}],news:[{type:'p',text:'Very positive news flow'}]},why_now:['CEO bought $250k yesterday','Contract signed this morning'],position:{shares:425,cost:1007,stop:1.90,target:8.50,risk_amount:200},news:[{title:'374Water secures municipal utility pilot contract',source:'PR Newswire',sentiment:'pos',time:'6h ago',link:''},{title:'HC Wainwright raises target to $9.00',source:'Seeking Alpha',sentiment:'pos',time:'1d ago',link:''}],insider:{action:'buy',name:'CEO Marc Dorfman',amount:250000,date:'2026-05-18'},prices:[3.9,3.7,3.5,3.2,3.0,2.8,2.6,2.5,2.4,2.3,2.2,2.1,2.15,2.2,2.25,2.28,2.30,2.32,2.35,2.37],volumes:[320,410,280,520,380,440,600,350,420,680,390,340,450,380,540,320,420,360,500,480]},
+    {sym:'NVDA',name:'NVIDIA Corp.',country:'US',sector:'Tech',tier:'Large',price:185,chg:3.21,rsi:68,sma20:178,sma50:165,support:160,resistance:190,vol_ratio:2.4,target:220,rr_ratio:4.1,pe:72.5,fpe:45.3,peg:1.2,pm:48.5,rg:122.4,roe:98.3,de:38.5,cr:3.42,beta:1.68,rec_key:'strong_buy',num_analysts:51,total:10.2,verdict:'Recommend',verdict_class:'recommend',entry:'WAIT',entry_checks:{rsi_ok:false,near_support:false,volume_ok:true,trend_ok:true,not_overbought:false},checks_passed:2,scores:{technical:1.5,fundamental:5,valuation:1,sentiment:5.5,risk:0.5,news:3},signals:{technical:[{type:'n',text:'RSI overbought (68)'},{type:'p',text:'Price above both MAs'}],fundamental:[{type:'p',text:'Profit margin 48.5%'},{type:'p',text:'Revenue growth 122%'}],valuation:[{type:'n',text:'P/E 72.5 - premium'},{type:'p',text:'PEG 1.2 - good growth value'}],sentiment:[{type:'p',text:'STRONG BUY - 51 analysts'},{type:'p',text:'INSIDER BUY: Jensen Huang $2M'}],risk:[{type:'p',text:'Strong liquidity CR 3.42'},{type:'n',text:'High beta 1.68'}],news:[{type:'p',text:'Data centre demand at record high'}]},why_now:['Insider buy $2M','Revenue +122%'],position:{shares:22,cost:4070,stop:160,target:220,risk_amount:200},news:[{title:'NVIDIA H200 demand exceeds supply - record orders',source:'Bloomberg',sentiment:'pos',time:'1h ago',link:''},{title:'Data center revenue up 427% YoY',source:'CNBC',sentiment:'pos',time:'4h ago',link:''},{title:'China export restrictions could limit revenue',source:'Reuters',sentiment:'neg',time:'2d ago',link:''}],insider:{action:'buy',name:'Jensen Huang',amount:2000000,date:'2026-05-15'},prices:[120,125,128,130,136,140,145,150,148,155,160,158,163,168,165,170,175,178,182,185],volumes:[80,92,75,110,85,98,120,88,95,140,105,88,115,102,125,88,135,99,145,130]},
+    {sym:'NOVO-B.CO',name:'Novo Nordisk B',country:'DK',sector:'Pharma',tier:'Large',price:652,chg:-1.12,rsi:52,sma20:645,sma50:620,support:610,resistance:680,vol_ratio:1.8,target:750,rr_ratio:3.2,pe:34.2,fpe:28.8,peg:1.4,pm:33.5,rg:31.2,roe:85.2,de:28.5,cr:1.42,beta:0.72,rec_key:'buy',num_analysts:28,total:9.5,verdict:'Recommend',verdict_class:'recommend',entry:'FAIR',entry_checks:{rsi_ok:true,near_support:false,volume_ok:true,trend_ok:true,not_overbought:true},checks_passed:4,scores:{technical:2,fundamental:4,valuation:1.5,sentiment:4.5,risk:1.5,news:2},signals:{technical:[{type:'u',text:'RSI neutral (52)'},{type:'p',text:'Price above both MAs'}],fundamental:[{type:'p',text:'Profit margin 33.5%'},{type:'p',text:'Revenue growth 31.2%'}],valuation:[{type:'u',text:'P/E 34.2 - moderate'},{type:'p',text:'Target +15% upside'}],sentiment:[{type:'p',text:'BUY - 28 analysts'},{type:'p',text:'INSIDER BUY: CEO DKK 1.2M'}],risk:[{type:'p',text:'Low beta 0.72'},{type:'u',text:'Moderate D/E 28.5'}],news:[{type:'p',text:'Phase 3 trial beat expectations'}]},why_now:['Phase 3 CagriSema results today','Goldman raised target'],position:{shares:1,cost:652,stop:610,target:750,risk_amount:200},news:[{title:'Phase 3 CagriSema: 22.7% weight loss beats semaglutide',source:'Bloomberg',sentiment:'pos',time:'4h ago',link:''},{title:'Goldman raises NVO target to DKK 850',source:'Reuters',sentiment:'pos',time:'1d ago',link:''}],insider:{action:'buy',name:'Lars Jorgensen CEO',amount:1200000,date:'2026-05-12'},prices:[580,590,585,595,605,600,610,618,612,620,628,622,632,640,635,642,648,644,650,652],volumes:[18,22,16,25,20,23,28,19,24,30,22,20,25,21,28,18,24,20,27,23]},
+    {sym:'EQUINOR.OL',name:'Equinor ASA',country:'NO',sector:'Energy',tier:'Large',price:265,chg:-0.85,rsi:42,sma20:263,sma50:258,support:255,resistance:275,vol_ratio:1.2,target:310,rr_ratio:1.8,pe:9.5,fpe:8.8,peg:0.9,pm:22.8,rg:8.5,roe:28.5,de:58.5,cr:1.62,beta:0.92,rec_key:'buy',num_analysts:24,total:6.5,verdict:'Speculative',verdict_class:'speculative',entry:'GOOD',entry_checks:{rsi_ok:true,near_support:true,volume_ok:true,trend_ok:true,not_overbought:true},checks_passed:5,scores:{technical:2,fundamental:2,valuation:3,sentiment:1.5,risk:1,news:1},signals:{technical:[{type:'u',text:'RSI neutral (42)'},{type:'p',text:'Price above both MAs'}],fundamental:[{type:'p',text:'Profit margin 22.8%'},{type:'u',text:'Revenue growth 8.5%'}],valuation:[{type:'p',text:'P/E 9.5 - undervalued'},{type:'p',text:'PEG 0.9 - good value'}],sentiment:[{type:'p',text:'BUY - 24 analysts'},{type:'p',text:'INSIDER BUY: CFO $800k'}],risk:[{type:'u',text:'Moderate D/E 58.5'},{type:'p',text:'Low beta 0.92'}],news:[{type:'u',text:'Mixed - oil positive, tax negative'}]},why_now:['Oil at $92 - CFO bought','OPEC+ cuts extended'],position:{shares:3,cost:795,stop:255,target:310,risk_amount:200},news:[{title:'Brent crude hits $92 - OPEC+ cuts extended 6 months',source:'Reuters',sentiment:'pos',time:'2h ago',link:''},{title:'Norway increases windfall tax on energy',source:'FT',sentiment:'neg',time:'3d ago',link:''}],insider:{action:'buy',name:'CFO Torgrim Reitan',amount:800000,date:'2026-05-14'},prices:[248,252,250,255,258,256,260,262,260,263,265,263,266,268,266,267,266,265,264,265],volumes:[15,18,13,20,16,18,22,14,18,24,16,14,18,15,20,13,16,14,19,16]},
+    {sym:'MOWI.OL',name:'Mowi ASA',country:'NO',sector:'Bev',tier:'Mid',price:182,chg:1.05,rsi:48,sma20:180,sma50:175,support:172,resistance:190,vol_ratio:1.1,target:210,rr_ratio:2.8,pe:12.5,fpe:11.2,peg:1.1,pm:16.5,rg:9.5,roe:18.5,de:35.5,cr:1.48,beta:0.78,rec_key:'buy',num_analysts:16,total:7.8,verdict:'Speculative',verdict_class:'speculative',entry:'GOOD',entry_checks:{rsi_ok:true,near_support:false,volume_ok:true,trend_ok:true,not_overbought:true},checks_passed:4,scores:{technical:1.5,fundamental:2,valuation:2,sentiment:3,risk:2,news:1.5},signals:{technical:[{type:'u',text:'RSI neutral (48)'},{type:'p',text:'Price above both MAs'}],fundamental:[{type:'p',text:'Profit margin 16.5%'},{type:'u',text:'Revenue growth 9.5%'}],valuation:[{type:'p',text:'P/E 12.5 - attractive'},{type:'p',text:'PEG 1.1 - fair value'}],sentiment:[{type:'p',text:'BUY - 16 analysts'},{type:'p',text:'INSIDER BUY: CFO $420k'}],risk:[{type:'p',text:'Low beta 0.78'},{type:'u',text:'Moderate D/E 35.5'}],news:[{type:'p',text:'Salmon prices at 3-year high'}]},why_now:['Salmon prices 3yr high','CFO bought $420k'],position:{shares:4,cost:728,stop:172,target:210,risk_amount:200},news:[{title:'Norwegian salmon prices hit NOK 98/kg - 3-year high',source:'Reuters',sentiment:'pos',time:'3h ago',link:''},{title:'Mowi expands Canadian operations +15% capacity',source:'Bloomberg',sentiment:'pos',time:'2d ago',link:''}],insider:{action:'buy',name:'CFO Ivan Vindheim',amount:420000,date:'2026-05-13'},prices:[168,170,169,172,174,172,175,177,175,178,180,178,181,182,181,183,184,182,182,182],volumes:[10,12,9,14,11,12,15,9,12,16,11,9,12,10,13,9,11,9,13,11]},
+    {sym:'MSFT',name:'Microsoft Corp.',country:'US',sector:'Tech',tier:'Large',price:445,chg:0.68,rsi:55,sma20:440,sma50:425,support:430,resistance:460,vol_ratio:0.9,target:505,rr_ratio:2.5,pe:35.2,fpe:30.5,peg:2.1,pm:36.8,rg:17.6,roe:38.5,de:35.8,cr:1.75,beta:0.88,rec_key:'buy',num_analysts:48,total:5.2,verdict:'Neutral',verdict_class:'neutral',entry:'FAIR',entry_checks:{rsi_ok:true,near_support:false,volume_ok:false,trend_ok:true,not_overbought:true},checks_passed:3,scores:{technical:1,fundamental:3,valuation:0,sentiment:2.5,risk:1.5,news:-1},signals:{technical:[{type:'u',text:'RSI neutral (55)'},{type:'p',text:'Price above both MAs'}],fundamental:[{type:'p',text:'Profit margin 36.8%'},{type:'p',text:'Revenue growth 17.6%'}],valuation:[{type:'u',text:'P/E 35.2 - elevated'},{type:'u',text:'PEG 2.1 - moderate'}],sentiment:[{type:'p',text:'BUY - 48 analysts'},{type:'u',text:'No recent insider activity'}],risk:[{type:'p',text:'Low beta 0.88'},{type:'u',text:'Moderate D/E 35.8'}],news:[{type:'n',text:'Cloud growth slowdown reports'}]},why_now:['Azure AI driving estimates','No major catalyst 48h'],position:{shares:1,cost:445,stop:430,target:505,risk_amount:200},news:[{title:'Azure AI workloads driving Microsoft cloud beat',source:'Bloomberg',sentiment:'pos',time:'1d ago',link:''},{title:'Reports of cloud growth deceleration in Q2',source:'WSJ',sentiment:'neg',time:'3d ago',link:''}],insider:null,prices:[410,415,412,418,422,420,425,428,426,430,433,431,435,438,436,440,443,441,444,445],volumes:[35,42,32,48,38,44,52,38,45,58,42,39,46,40,55,36,48,38,52,44]},
+    {sym:'XTRA.V',name:'Xtract One Tech',country:'CA',sector:'Tech',tier:'Penny',price:0.47,chg:-4.08,rsi:35,sma20:0.50,sma50:0.58,support:0.42,resistance:0.62,vol_ratio:1.3,target:1.20,rr_ratio:3.6,pe:0,fpe:0,peg:0,pm:-25.5,rg:45.5,roe:-42.5,de:8.5,cr:2.85,beta:1.85,rec_key:'buy',num_analysts:4,total:4.8,verdict:'Neutral',verdict_class:'neutral',entry:'FAIR',entry_checks:{rsi_ok:true,near_support:true,volume_ok:true,trend_ok:false,not_overbought:true},checks_passed:4,scores:{technical:1.5,fundamental:-1,valuation:0,sentiment:2,risk:2,news:2},signals:{technical:[{type:'u',text:'RSI low (35)'},{type:'n',text:'Price below both MAs'}],fundamental:[{type:'n',text:'Negative margin pre-profit'},{type:'p',text:'Revenue growth 45.5%'}],valuation:[{type:'u',text:'Pre-profit stage'},{type:'p',text:'Target +155% upside'}],sentiment:[{type:'p',text:'BUY - 4 analysts'},{type:'p',text:'INSIDER BUY: CEO $180k'}],risk:[{type:'p',text:'Low D/E 8.5'},{type:'n',text:'High beta 1.85'}],news:[{type:'p',text:'Stadium contract announced'}]},why_now:['NFL stadium contract $4.2M','CEO bought $180k'],position:{shares:400,cost:188,stop:0.42,target:1.20,risk_amount:200},news:[{title:'Xtract One wins $4.2M NFL stadium security contract',source:'PR Newswire',sentiment:'pos',time:'8h ago',link:''},{title:'SmartGateway deployed in 240+ venues',source:'Seeking Alpha',sentiment:'pos',time:'2d ago',link:''},{title:'Cash runway 14 months - monitor closely',source:'Cormark Research',sentiment:'neg',time:'4d ago',link:''}],insider:{action:'buy',name:'CEO Peter Evans',amount:180000,date:'2026-05-16'},prices:[0.68,0.65,0.62,0.60,0.58,0.55,0.52,0.50,0.53,0.51,0.50,0.49,0.51,0.50,0.49,0.48,0.49,0.48,0.47,0.47],volumes:[800,950,720,1100,850,920,1200,780,900,1350,820,750,950,820,1100,750,880,780,1050,900]},
+    {sym:'TSLA',name:'Tesla Inc.',country:'US',sector:'Tech',tier:'Large',price:220,chg:-1.85,rsi:38,sma20:228,sma50:235,support:210,resistance:240,vol_ratio:0.8,target:250,rr_ratio:1.1,pe:65.3,fpe:52.1,peg:2.4,pm:14.7,rg:24.3,roe:28.5,de:18.2,cr:1.52,beta:2.08,rec_key:'hold',num_analysts:38,total:-8.5,verdict:'Avoid',verdict_class:'avoid',entry:'POOR',entry_checks:{rsi_ok:true,near_support:false,volume_ok:false,trend_ok:false,not_overbought:true},checks_passed:2,scores:{technical:-2,fundamental:1,valuation:-3,sentiment:-1,risk:-1.5,news:-3},signals:{technical:[{type:'u',text:'RSI low (38)'},{type:'n',text:'Price below both MAs'}],fundamental:[{type:'u',text:'Profit margin 14.7%'},{type:'p',text:'Revenue growth 24.3%'}],valuation:[{type:'n',text:'P/E 65.3 - overvalued'},{type:'n',text:'PEG 2.4 - expensive'}],sentiment:[{type:'u',text:'HOLD - 38 analysts'},{type:'n',text:'INSIDER SELL: $3.5M'}],risk:[{type:'p',text:'Low D/E 18.2'},{type:'n',text:'High beta 2.08'}],news:[{type:'n',text:'Delivery miss and recall announced'}]},why_now:['Insider sold $3.5M','Recall and 3rd delivery miss'],position:{shares:0,cost:0,stop:210,target:250,risk_amount:0},news:[{title:'Tesla misses Q1 deliveries - third consecutive quarter',source:'Reuters',sentiment:'neg',time:'2h ago',link:''},{title:'Cybertruck recall announced for steering fault',source:'WSJ',sentiment:'neg',time:'1d ago',link:''},{title:'FSD v13 showing promising autonomy metrics',source:'TechCrunch',sentiment:'pos',time:'3d ago',link:''}],insider:{action:'sell',name:'Elon Musk',amount:3500000,date:'2026-05-08'},prices:[200,205,202,208,213,210,216,220,215,218,223,219,225,230,225,225,222,218,220,220],volumes:[95,112,88,130,102,118,145,105,112,160,125,105,138,122,150,105,162,118,175,155]},
+  ];
+  applyF();
+}
+
+init();
+</script>
+</body>
+</html>
